@@ -14,7 +14,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
+
 import android.view.View;
 import android.widget.MediaController;
 import android.widget.TextView;
@@ -49,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
 
         registerReceiver(onDownloadComplete, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
         if (isConnected()) {
-            Toast.makeText(getApplicationContext(), "Internet Connected", Toast.LENGTH_SHORT).show();
             listLinks = new ArrayList<>();
             final AuraDataService auraDataService = new AuraDataService(this);
             auraDataService.getData(new AuraDataService.VolleyResponseListener() {
@@ -79,8 +78,9 @@ public class MainActivity extends AppCompatActivity {
                         for (int i = 0; i < listLinks.size(); i++) {
                             filename = listLinks.get(i).substring(listLinks.get(i).lastIndexOf('/') + 1);
                             File tempFile = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) + "/" + filename);
-                            Log.v("FILE", tempFile.getAbsolutePath());
+
                             if (!tempFile.isFile()) {
+                                Toast.makeText(MainActivity.this, "Downloading files", Toast.LENGTH_SHORT).show();
                                 downloading_and_playing(i, filename);
                             } else {
                                 play_video(filename);
@@ -106,8 +106,7 @@ public class MainActivity extends AppCompatActivity {
             if (downloadID-1 == id) {
                 Uri uri=Uri.parse(pathsToFiles.get(currentvideo));
                 videoView.setVideoURI(uri);
-                Log.i("videodownloadID", String.valueOf(id));
-                Log.i("videodownloadID",pathsToFiles.get(currentvideo));
+
                 MediaController mediacontroller = new MediaController(
                         MainActivity.this);
                 mediacontroller.setAnchorView(videoView);
@@ -119,8 +118,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onCompletion(MediaPlayer mediaPlayer) {
                         videoView.stopPlayback();
-                        Log.v("video: ", String.valueOf(currentvideo));
-                        Log.v("video: ", pathsToFiles.toString());
+
 
                         Uri nextUri=Uri.parse(pathsToFiles.get(currentvideo++));
                         videoView.setVideoURI(nextUri);
@@ -143,7 +141,6 @@ public class MainActivity extends AppCompatActivity {
             connected = nInfo != null && nInfo.isAvailable() && nInfo.isConnected();
             return connected;
         } catch (Exception e) {
-            Log.e("Connectivity Exception", e.getMessage());
         }
         return connected;
     }
@@ -168,8 +165,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onCompletion(MediaPlayer mediaPlayer) {
                 videoView.stopPlayback();
-                Log.v("video: ", String.valueOf(currentvideo));
-
                 Uri nextUri=Uri.parse(pathsToFiles.get(currentvideo++));
                 videoView.setVideoURI(nextUri);
                 videoView.start();
@@ -183,8 +178,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void downloading_and_playing(int i, String filename) {
         if(!pathsToFiles.contains(Environment.getExternalStorageDirectory().getPath()+"/Movies/"+ filename)) {
-
-            Log.v("Filename: ", filename);
             Uri downloadUri = Uri.parse(listLinks.get(i));
             DownloadManager.Request request = new DownloadManager.Request(
                     downloadUri);
@@ -198,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
             DownloadManager mgr = (DownloadManager) this.getSystemService(Context.DOWNLOAD_SERVICE);
 
             downloadID = mgr.enqueue(request);
-            Log.i("videodownloadID", String.valueOf(downloadID));
+
         }
         pathsToFiles.add(Environment.getExternalStorageDirectory().getPath()+"/Movies/"+ filename);
     }
